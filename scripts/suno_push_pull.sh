@@ -2,7 +2,8 @@
 set -euo pipefail
 
 BASE="http://localhost:8080"
-SUNOAPILOGS="~/SunoApiManager/logs/suno_manager.log"
+#SUNOAPILOGS="~/SunoApiManager/logs/suno_manager.log"
+SUNOAPILOGS="~/git_repos/SunoApiManager/logs/suno_manager.log"
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <xlsx_file>"
