@@ -46,8 +46,22 @@ Browser logs:
 Call log:
 ```
 
-## Fix?
+## This fixes that:
 
 ```bash
 xvfb-run -a uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+## Additional error
+
+```bash
+No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'",
+or install 'websockets' or 'wsproto' manually.
+```
+
+## Fix ?
+
+```bash
+pip install "uvicorn[standard]"
+xvfb-run -a uvicorn app:app --host 0.0.0.0 --port 8080
 ```
