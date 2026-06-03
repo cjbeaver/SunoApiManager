@@ -32,8 +32,50 @@ playwright install
 Sometimes Playwright requires additional OS-level libraries to run Chromium successfully. To ensure you have all of them, run:
 
 ```bash
-playwright install-deps
+playwright install-deps # or
+sudo dnf install libicu woff2 libjpeg-turbo libwebp libffi x264-libs
+```
+
+Playwright's automated installation script downloaded a pre-compiled Chromium binary designed specifically for an older version of Ubuntu. That Ubuntu binary is hardcoded to look for older shared libraries (e.g., `libffi.so.7`, `libicudata.so.66`). Because your Fedora system already has much newer, updated versions of those libraries installed (like `libffi-3.5.2` and `libicu-77.1`), Playwright fails to link to them, and `dnf` correctly refuses to install the older overlapping packages.
+
+### The Fix: Use Fedora's Native Chromium
+
+The cleanest and most robust solution is to bypass Playwright's bundled browser entirely and tell the application to use Fedora's native Chromium package instead.
+
+**1. Install Fedora's Native Chromium**
+Install the official Fedora Chromium package, which is perfectly compiled for your system's current libraries:
+
+```bash
+sudo dnf install chromium
 
 ```
 
-Once those downloads complete, you can start the application again using your modified `./start.sh` script.
+**2. Point Playwright to the Native Browser**
+You don't need to rewrite any Python code to fix this. You can force Playwright to use the system browser by exporting a specific environment variable in your `start.sh` file.
+
+Open `start.sh` and add `export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium` right before the final `exec` block.
+
+Your final lines should look exactly like this:
+
+```bash
+# ── Start the server ─────────────────────────────────────
+
+echo ""
+echo -e "${GREEN}╔══════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║         Suno Manager — Starting          ║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════════╝${NC}"
+echo ""
+
+export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+
+exec xvfb-run -a uvicorn app:app \
+    --host 0.0.0.0 \
+    --port "$PORT" \
+    $RELOAD \
+    --log-level info
+
+```
+
+*(Note: Depending on the exact package configuration, the executable might be symlinked as `chromium-browser`. If Playwright complains it can't find `/usr/bin/chromium`, change the path in your script to `/usr/bin/chromium-browser`).*
+
+Once saved, simply run `./start.sh` again. The app will launch via Uvicorn, Xvfb will provide the virtual display, and Playwright will natively leverage your local, fully-functional Fedora Chromium build to solve the CAPTCHA.
