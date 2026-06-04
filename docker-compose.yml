@@ -17,4 +17,7 @@ services:
       - ./logs:/app/logs
       - ./data:/app/data
     environment:
-      - TZ=Europe/Istanbul
+      - TZ=America/New_York
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
